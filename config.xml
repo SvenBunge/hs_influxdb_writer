@@ -1,0 +1,44 @@
+<?xml version="1.0" encoding="utf-8"?>
+<config>
+    <modules>
+        <module category="Sonstiges" context="InfluxDBwriter14183" id="14183" name="InfluxDBwriter" internal_name="InfluxDBwriter" external_name="InfluxDB Writer (14183)" version="0.1">
+            <inputs>
+                <input type="number" const_name="interval_frequency" init_value="-1">Write frequency in seconds (default: -1 secs - off)</input>
+                <input type="number" const_name="update_writes" init_value="0">0: Interval only, 1: Write all values on update, 2: Write single value on update</input>
+                <input type="string" const_name="influxdb_url" init_value="http://127.0.0.1:8086">URL of InfluxDB.Must start with the protocol (http/https)!</input>
+                <input type="string" const_name="influxdb_token" init_value="">Auth-Token (InfluxDB1: Username:Passwort - only ASCII chars)</input>
+                <input type="string" const_name="influxdb_org" init_value="">Organisation ID (InfluxDB2 only)</input>
+                <input type="string" const_name="bucket" init_value="">Bucket name</input>
+                <input type="string" const_name="measurement" init_value="">Measurement name</input>
+                <input type="string" const_name="tag_name" init_value="">Tag name (optional)</input>
+                <input type="string" const_name="tag_value" init_value="">Tag value (optional)</input>
+                <input type="string" const_name="value1_name" init_value="">Name of value1</input>
+                <input type="number" const_name="value1_val" init_value="-99999.99">Value of value1</input>
+                <input type="string" const_name="value2_name" init_value="">Name of value2</input>
+                <input type="number" const_name="value2_val" init_value="-99999.99">Value of value2</input>
+                <input type="string" const_name="value3_name" init_value="">Name of value3</input>
+                <input type="number" const_name="value3_val" init_value="-99999.99">Value of value3</input>
+                <input type="string" const_name="value4_name" init_value="">Name of value4</input>
+                <input type="number" const_name="value4_val" init_value="-99999.99">Value of value4</input>
+                <input type="string" const_name="value5_name" init_value="">Name of value5</input>
+                <input type="number" const_name="value5_val" init_value="-99999.99">Value of value5</input>
+                <input type="string" const_name="value6_name" init_value="">Name of value6</input>
+                <input type="number" const_name="value6_val" init_value="-99999.99">Value of value6</input>
+                <input type="string" const_name="value7_name" init_value="">Name of value7</input>
+                <input type="number" const_name="value7_val" init_value="-99999.99">Value of value7</input>
+                <input type="string" const_name="value8_name" init_value="">Name of value8</input>
+                <input type="number" const_name="value8_val" init_value="-99999.99">Value of value8</input>
+
+            </inputs>
+            <outputs>
+                <output type="number" const_name="send_counter" init_value="0">Writes into InfluxDB</output>
+            </outputs>
+            <remanent_variables>
+            </remanent_variables>
+            <imports>
+                <import>hsl20_3_timer</import>
+            </imports>
+        </module>
+    </modules>
+    <logging type="None" ip="" port="" />
+</config>

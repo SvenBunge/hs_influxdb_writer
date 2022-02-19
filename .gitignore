@@ -1,0 +1,9 @@
+
+venv/
+release/*.hsl
+release/*.hslz
+release/log14183.html
+debug/
+
+.idea
+.DS_Store
