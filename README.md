@@ -13,7 +13,7 @@ If something doesn't work like expected: Just open an issue. Even better: Fix th
 ## Installation
 
 Download a [release](https://github.com/SvenBunge/hs_influxdb_writer/releases) and install the module / Logikbaustein like others in Experte.
-You find the module in the category "Energiemanagement". Just pic the IP address, port and unit-id of your inverter and wire the output to your communication objects. 
+You find the module in the category "Datenaustausch".
 
 The latest version of the module is also available in the [KNX-User Forum Download Section](https://service.knx-user-forum.de/?comm=download&id=14183)
 

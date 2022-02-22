@@ -18,29 +18,31 @@ class InfluxDBwriter14183(hsl20_3.BaseModule):
         self.LOGGER = self._get_logger(hsl20_3.LOGGING_NONE,())
         self.PIN_I_INTERVAL_FREQUENCY=1
         self.PIN_I_UPDATE_WRITES=2
-        self.PIN_I_INFLUXDB_URL=3
-        self.PIN_I_INFLUXDB_TOKEN=4
-        self.PIN_I_INFLUXDB_ORG=5
-        self.PIN_I_BUCKET=6
-        self.PIN_I_MEASUREMENT=7
-        self.PIN_I_TAG_NAME=8
-        self.PIN_I_TAG_VALUE=9
-        self.PIN_I_VALUE1_NAME=10
-        self.PIN_I_VALUE1_VAL=11
-        self.PIN_I_VALUE2_NAME=12
-        self.PIN_I_VALUE2_VAL=13
-        self.PIN_I_VALUE3_NAME=14
-        self.PIN_I_VALUE3_VAL=15
-        self.PIN_I_VALUE4_NAME=16
-        self.PIN_I_VALUE4_VAL=17
-        self.PIN_I_VALUE5_NAME=18
-        self.PIN_I_VALUE5_VAL=19
-        self.PIN_I_VALUE6_NAME=20
-        self.PIN_I_VALUE6_VAL=21
-        self.PIN_I_VALUE7_NAME=22
-        self.PIN_I_VALUE7_VAL=23
-        self.PIN_I_VALUE8_NAME=24
-        self.PIN_I_VALUE8_VAL=25
+        self.PIN_I_MANUAL_WRITE=3
+        self.PIN_I_DEBUG_ENABLED=4
+        self.PIN_I_INFLUXDB_URL=5
+        self.PIN_I_INFLUXDB_ORG=6
+        self.PIN_I_INFLUXDB_TOKEN=7
+        self.PIN_I_BUCKET=8
+        self.PIN_I_MEASUREMENT=9
+        self.PIN_I_TAG_NAME=10
+        self.PIN_I_TAG_VALUE=11
+        self.PIN_I_VALUE1_NAME=12
+        self.PIN_I_VALUE1_VAL=13
+        self.PIN_I_VALUE2_NAME=14
+        self.PIN_I_VALUE2_VAL=15
+        self.PIN_I_VALUE3_NAME=16
+        self.PIN_I_VALUE3_VAL=17
+        self.PIN_I_VALUE4_NAME=18
+        self.PIN_I_VALUE4_VAL=19
+        self.PIN_I_VALUE5_NAME=20
+        self.PIN_I_VALUE5_VAL=21
+        self.PIN_I_VALUE6_NAME=22
+        self.PIN_I_VALUE6_VAL=23
+        self.PIN_I_VALUE7_NAME=24
+        self.PIN_I_VALUE7_VAL=25
+        self.PIN_I_VALUE8_NAME=26
+        self.PIN_I_VALUE8_VAL=27
         self.PIN_O_SEND_COUNTER=1
         self.FRAMEWORK._run_in_context_thread(self.on_init)
 
@@ -54,7 +56,7 @@ class InfluxDBwriter14183(hsl20_3.BaseModule):
 
     def on_init(self):
         self.interval = self.FRAMEWORK.create_interval()
-        if self._get_input_value(self.PIN_I_INTERVAL_FREQUENCY) != -1:
+        if self._get_input_value(self.PIN_I_INTERVAL_FREQUENCY) > 0:
             self.interval.set_interval(self._get_input_value(self.PIN_I_INTERVAL_FREQUENCY) * 1000, self.on_interval)
             self.interval.start()
 
@@ -64,6 +66,8 @@ class InfluxDBwriter14183(hsl20_3.BaseModule):
             if value != -1:
                 self.interval.set_interval(value * 1000, self.on_interval)
                 self.interval.start()
+        elif index == self.PIN_I_MANUAL_WRITE:
+            self.send_values(self.build_value_lines())
         elif index in [self.PIN_I_VALUE1_VAL, self.PIN_I_VALUE2_VAL, self.PIN_I_VALUE3_VAL, self.PIN_I_VALUE4_VAL,
                        self.PIN_I_VALUE5_VAL, self.PIN_I_VALUE6_VAL, self.PIN_I_VALUE7_VAL, self.PIN_I_VALUE8_VAL] \
                 and self._get_input_value(self.PIN_I_UPDATE_WRITES) == 1:
@@ -142,11 +146,11 @@ class InfluxDBwriter14183(hsl20_3.BaseModule):
                             self._get_input_value(self.PIN_I_TAG_VALUE)
             post_body += " " + ",".join(valuelines) + " " + str(epoch_time)
 
-            self.DEBUG.set_value("Last body", post_body)
+            self.log_debug("Last body", post_body)
 
             # URL
             url = influx_url + "/api/v2/write?bucket=" + influx_bucket + "&org=" + influx_org + "&precision=s"
-            self.DEBUG.set_value("Last url", url)
+            self.log_debug("Last url", url)
 
             # Auth & URL
             auth_header_str = "Token " + influx_token
@@ -157,9 +161,13 @@ class InfluxDBwriter14183(hsl20_3.BaseModule):
             # Open the URL and read the response.
             response = urllib2.urlopen(urllib2.Request(url, data=post_body, headers=headers), context=ctx)
             response_data = response.read()
-            self.DEBUG.set_value("Last response", response_data)
+            self.log_debug("Last response", response_data)
             self.counter += 1
             self._set_output_value(self.PIN_O_SEND_COUNTER, self.counter)
 
         except Exception as err:
-            self.DEBUG.set_value("Last exception msg logged", err)
+            self.log_debug("Last exception msg logged", err)
+
+    def log_debug(self, debug_key, debug_value):
+        if self._get_input_value(self.PIN_I_DEBUG_ENABLED) == 1:
+            self.DEBUG.set_value(debug_key, debug_value)
