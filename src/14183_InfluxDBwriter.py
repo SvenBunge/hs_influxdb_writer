@@ -1,9 +1,10 @@
 # coding: utf-8
 
+import urllib
 import urllib2
 import ssl
 import time
-
+import string
 
 ##!!!!##################################################################################################
 #### Own written code can be placed above this commentblock . Do not change or delete commentblock! ####
@@ -56,14 +57,15 @@ class InfluxDBwriter14183(hsl20_3.BaseModule):
 
     def on_init(self):
         self.interval = self.FRAMEWORK.create_interval()
-        if self._get_input_value(self.PIN_I_INTERVAL_FREQUENCY) > 0:
-            self.interval.set_interval(self._get_input_value(self.PIN_I_INTERVAL_FREQUENCY) * 1000, self.on_interval)
+        interval_frequency = self._get_input_value(self.PIN_I_INTERVAL_FREQUENCY)
+        if interval_frequency > 0:
+            self.interval.set_interval(interval_frequency * 1000, self.on_interval)
             self.interval.start()
 
     def on_input_value(self, index, value):
         if index == self.PIN_I_INTERVAL_FREQUENCY:
             self.interval.stop()
-            if value != -1:
+            if value > 0:
                 self.interval.set_interval(value * 1000, self.on_interval)
                 self.interval.start()
         elif index == self.PIN_I_MANUAL_WRITE:
@@ -132,11 +134,11 @@ class InfluxDBwriter14183(hsl20_3.BaseModule):
 
     def send_values(self, valuelines):
         try:
-            influx_url = self._get_input_value(self.PIN_I_INFLUXDB_URL)
-            influx_token = str(self._get_input_value(self.PIN_I_INFLUXDB_TOKEN))
-            influx_org = self._get_input_value(self.PIN_I_INFLUXDB_ORG)
-            influx_bucket = self._get_input_value(self.PIN_I_BUCKET)
-            influx_measurement = self._get_input_value(self.PIN_I_MEASUREMENT)
+            influx_url = string.strip(self._get_input_value(self.PIN_I_INFLUXDB_URL))
+            influx_token = string.strip(str(self._get_input_value(self.PIN_I_INFLUXDB_TOKEN)))
+            influx_org = string.strip(self._get_input_value(self.PIN_I_INFLUXDB_ORG))
+            influx_bucket = string.strip(self._get_input_value(self.PIN_I_BUCKET))
+            influx_measurement = string.strip(self._get_input_value(self.PIN_I_MEASUREMENT))
 
             # Build body
             epoch_time = int(time.time())
@@ -149,7 +151,9 @@ class InfluxDBwriter14183(hsl20_3.BaseModule):
             self.log_debug("Last body", post_body)
 
             # URL
-            url = influx_url + "/api/v2/write?bucket=" + influx_bucket + "&org=" + influx_org + "&precision=s"
+            url_params = {'bucket': influx_bucket, 'org': influx_org, 'precision': 's'}
+
+            url = influx_url + "/api/v2/write?" + urllib.urlencode(url_params)
             self.log_debug("Last url", url)
 
             # Auth & URL

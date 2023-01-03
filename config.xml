@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <config>
     <modules>
-        <module category="Datenaustausch" context="InfluxDBwriter14183" id="14183" name="InfluxDBwriter" internal_name="InfluxDBwriter" external_name="InfluxDB Writer (14183)" version="0.1">
+        <module category="Datenaustausch" context="InfluxDBwriter14183" id="14183" name="InfluxDBwriter" internal_name="InfluxDBwriter" external_name="InfluxDB Writer (14183)" version="0.2">
             <inputs>
                 <input type="number" const_name="interval_frequency" init_value="0">Write frequency in seconds (default: 0 secs - off)</input>
                 <input type="number" const_name="update_writes" init_value="0">0: Interval only, 1: Write all values on update, 2: Write single value on update</input>
