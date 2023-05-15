@@ -5,6 +5,7 @@ import urllib2
 import ssl
 import time
 import string
+import datetime
 
 ##!!!!##################################################################################################
 #### Own written code can be placed above this commentblock . Do not change or delete commentblock! ####
@@ -56,6 +57,7 @@ class InfluxDBwriter14183(hsl20_3.BaseModule):
         self.counter = 0
 
     def on_init(self):
+        time.sleep(2)  # wait till startup is done in parallel
         self.interval = self.FRAMEWORK.create_interval()
         interval_frequency = self._get_input_value(self.PIN_I_INTERVAL_FREQUENCY)
         if interval_frequency > 0:
@@ -128,6 +130,8 @@ class InfluxDBwriter14183(hsl20_3.BaseModule):
 
     def add_value_line(self, valuelines, value_name, value_val):
         if value_name != "" and value_val != -99999.99:  # fieldname must be set and initial value changed
+            # Escaping: https://docs.influxdata.com/influxdb/v1.8/write_protocols/line_protocol_reference/
+            value_name = str(value_name).replace(" ", "\\ ").replace(",", "\\,").replace("=", "\\=")
             valuelines.append(value_name + "=" + str(value_val))
 
         return valuelines
@@ -142,7 +146,7 @@ class InfluxDBwriter14183(hsl20_3.BaseModule):
 
             # Build body
             epoch_time = int(time.time())
-            post_body = influx_measurement
+            post_body = str(influx_measurement).replace(" ", "\\ ").replace(",", "\\,")
             if self._get_input_value(self.PIN_I_TAG_NAME) != "" and self._get_input_value(self.PIN_I_TAG_VALUE) != "":
                 post_body += "," + self._get_input_value(self.PIN_I_TAG_NAME) + "=" + \
                             self._get_input_value(self.PIN_I_TAG_VALUE)
@@ -162,16 +166,32 @@ class InfluxDBwriter14183(hsl20_3.BaseModule):
 
             # Build a SSL Context to disable certificate verification.
             ctx = ssl._create_unverified_context()
-            # Open the URL and read the response.
+            # Open the URL and read the response. // Automatically selecting POST method
             response = urllib2.urlopen(urllib2.Request(url, data=post_body, headers=headers), context=ctx)
             response_data = response.read()
             self.log_debug("Last response", response_data)
             self.counter += 1
             self._set_output_value(self.PIN_O_SEND_COUNTER, self.counter)
 
-        except Exception as err:
-            self.log_debug("Last exception msg logged", err)
+        except Exception:
+            self.log_err("Error during write")
 
-    def log_debug(self, debug_key, debug_value):
-        if self._get_input_value(self.PIN_I_DEBUG_ENABLED) == 1:
-            self.DEBUG.set_value(debug_key, debug_value)
+    def create_debug(self):
+        if not self.DEBUG:
+            self.DEBUG = self.FRAMEWORK.create_debug_section()
+
+    def log_debug(self, key, value):
+        if bool(self._get_input_value(self.PIN_I_DEBUG_ENABLED)):
+            self.create_debug()
+            self.DEBUG.set_value(key, str(value))
+
+    def log_msg(self, msg):
+        if bool(self._get_input_value(self.PIN_I_DEBUG_ENABLED)):
+            self.create_debug()
+            self.DEBUG.add_message(msg)
+
+    def log_err(self, msg):
+        if bool(self._get_input_value(self.PIN_I_DEBUG_ENABLED)):
+            self.create_debug()
+            timestr = datetime.datetime.now().strftime("%d.%b %Y %H:%M:%S")
+            self.DEBUG.add_exception(timestr + ": " + msg)
